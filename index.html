@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espetinho do Max - Pedido Online</title>
+    <style>
+        :root { --primary: #e63946; --secondary: #2a9d8f; --dark: #1d3557; --bg: #000000; --stars: #ffb100; --gray: #888; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; padding-bottom: 120px; color: #333; }
+        
+        header { background: var(--primary); color: white; text-align: center; padding: 25px 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; letter-spacing: 1px; }
+        header p { margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9; }
+
+        .container { max-width: 550px; margin: auto; padding: 15px; }
+        
+        .categoria-titulo { 
+            color: var(--dark); font-size: 1.2rem; margin: 25px 0 15px; 
+            padding-bottom: 5px; border-bottom: 2px solid var(--primary); display: block;
+        }
+
+        /* Cards de Produto */
+        .card { 
+            background: var(--gray); padding: 12px; border-radius: 12px; 
+            display: flex; align-items: center; margin-bottom: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.2s;
+        }
+        .produto-img { width: 85px; height: 85px; border-radius: 10px; object-fit: cover; margin-right: 15px; background: #ddd; }
+        .info { flex-grow: 1; }
+        .info h3 { margin: 0; font-size: 1rem; color: #222; }
+        .info p { margin: 4px 0; font-size: 0.8rem; color: #666; line-height: 1.2; }
+        .preco { color: var(--primary); font-weight: bold; font-size: 1.1rem; display: block; margin-top: 5px; }
+
+        .btn-add { 
+            background: var(--secondary); color: white; border: none; 
+            width: 42px; height: 42px; border-radius: 50%; 
+            font-weight: bold; font-size: 1.4rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-add:active { transform: scale(0.85); background: var(--dark); }
+
+        /* --- SEÇÃO DE DEPOIMENTOS --- */
+        .depoimentos-secao { margin-top: 40px; margin-bottom: 20px; }
+        .depoimento-card { 
+            background: white; padding: 20px; border-radius: 12px; 
+            margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            position: relative; overflow: hidden;
+        }
+        
+        /* Aspas estilizadas no canto */
+        .depoimento-card::before {
+            content: "\201C"; /* Símbolo de aspas abertas */
+            font-size: 8rem; position: absolute; top: -20px; left: -10px;
+            color: rgba(0,0,0,0.04); font-family: serif; font-weight: bold;
+        }
+
+        .stars { color: var(--stars); font-size: 1.1rem; margin-bottom: 10px; }
+        
+        .depoimento-texto { 
+            font-size: 0.9rem; color: #555; line-height: 1.5; font-style: italic; 
+            margin-bottom: 15px; position: relative; z-index: 1;
+        }
+
+        .cliente-info { display: flex; align-items: center; }
+        .cliente-foto { width: 45px; height: 45px; border-radius: 50%; background: #eee; margin-right: 12px; object-fit: cover; }
+        .cliente-nome { font-size: 0.95rem; font-weight: bold; color: var(--dark); }
+        .cliente-status { font-size: 0.8rem; color: var(--gray); display: block; }
+
+        /* Checkout Section */
+        #checkout-area { background: white; border-radius: 15px; padding: 20px; margin-top: 30px; display: none; border: 1px solid #ddd; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
+        .head-check { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .head-check h3 { margin: 0; color: var(--dark); }
+        .btn-clear { background: #fee2e2; color: #dc2626; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
+
+        .line-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; }
+        .badge { background: var(--primary); color: white; padding: 2px 7px; border-radius: 4px; font-size: 0.8rem; margin-right: 8px; }
+
+        form label { display: block; margin-top: 15px; font-size: 0.85rem; font-weight: bold; color: var(--gray); }
+        form input, form select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+
+        /* Rodapé Fixo */
+        .footer-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 15px 20px; border-top: 1px solid #ddd; display: none; justify-content: space-between; align-items: center; box-sizing: border-box; z-index: 1000; }
+        .total-box small { color: #777; display: block; }
+        .total-box strong { font-size: 1.3rem; color: var(--dark); }
+        .btn-main { background: #25d366; color: white; border: none; padding: 14px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 10px rgba(37,211,102,0.3); }
+   /* Estilo para a Seção de Localização */
+.mapa-secao {
+    margin-top: 30px;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.mapa-container {
+    width: 100%;
+    height: 250px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    margin-top: 10px;
+}
+
+.endereco-texto {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #666;
+    text-align: center;
+}
+ </style>
+</head>
+<body>
+
+<header>
+    <h1>Espetinho do Max</h1>
+    <p>🔥 Qualidade e sabor no seu churrasco</p>
+</header>
+
+<div class="container">
+    
+    <span class="categoria-titulo">🍢 Espetinhos Tradicionais</span>
+
+    <div class="card">
+        <img src="https://via.placeholder.com/85?text=Carne" class="produto-img">
+        <div class="info">
+            <h3>Espetinho de Carne</h3>
+            <p>Alcatra selecionada, macia e suculenta.</p>
+            <span class="preco">R$ 12,00</span>
+        </div>
+        <button class="btn-add" onclick="addItem('Espetinho de Carne', 12.00)">+</button>
+    </div>
+
+    <div class="card">
+        <img src="https://via.placeholder.com/85?text=Frango" class="produto-img">
+        <div class="info">
+            <h3>Espetinho de Frango</h3>
+            <p>Peito de frango em cubos marinados.</p>
+            <span class="preco">R$ 10,00</span>
+        </div>
+        <button class="btn-add" onclick="addItem('Espetinho de Frango', 10.00)">+</button>
+    </div>
+
+    <span class="categoria-titulo">🍱 Combos & Jantinhas</span>
+
+    <div class="card">
+        <img src="https://via.placeholder.com/85?text=Jantinha" class="produto-img">
+        <div class="info">
+            <h3>Jantinha Completa</h3>
+            <p>Arroz, feijão tropeiro, mandioca e vinagrete.</p>
+            <span class="preco">R$ 22,00</span>
+        </div>
+        <button class="btn-add" onclick="addItem('Jantinha Completa', 22.00)">+</button>
+    </div>
+
+    <span class="categoria-titulo">🥤 Bebidas</span>
+
+    <div class="card">
+        <img src="https://via.placeholder.com/85?text=Coca" class="produto-img">
+        <div class="info">
+            <h3>Coca-Cola Lata</h3>
+            <span class="preco">R$ 6,00</span>
+        </div>
+        <button class="btn-add" onclick="addItem('Coca-Cola Lata', 6.00)">+</button>
+    </div>
+<div class="mapa-secao">
+    <span class="categoria-titulo" style="margin-top: 0;">📍 Como chegar</span>
+    
+    <div class="mapa-container">
+        <iframe 
+            width="100%" 
+            height="100%" 
+            frameborder="0" 
+            style="border:0" 
+            src="https://www.google.com/maps/embed/v1/place?key=SUA_CHAVE_AQUI&q=Rua+Eucalipto,+48,+Extremoz+-+RN" 
+            allowfullscreen>
+        </iframe>
+        
+        <iframe 
+            width="100%" 
+            height="100%" 
+            style="border:0" 
+            loading="lazy" 
+            allowfullscreen 
+            src="https://maps.google.com/maps?q=Rua%20Eucalipto,%2048%20Extremoz%20RN&t=&z=15&ie=UTF8&iwloc=&output=embed">
+        </iframe>
+    </div>
+    
+    <small class="endereco-texto">
+        Rua Eucalipto, 48 - Extremoz, RN <br>
+        <strong>Aberto para retirada e delivery!</strong>
+    </small>
+</div>
+
+    <div class="depoimentos-secao">
+        <span class="categoria-titulo">💬 O que dizem nossos clientes</span>
+
+        <div class="depoimento-card">
+            <div class="stars">★★★★★</div>
+            <p class="depoimento-texto">"Melhor espetinho da região! A carne é super macia. Chega sempre quentinho. Nota 10!"</p>
+            <div class="cliente-info">
+                <img src="https://via.placeholder.com/45" class="cliente-foto">
+                <div>
+                    <span class="cliente-nome">Carlos Silva</span>
+                    <span class="cliente-status">Cliente Verificado ✅</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="depoimento-card">
+            <div class="stars">★★★★★</div>
+            <p class="depoimento-texto">"O espetinho de lingua é divino! Pedimos e adoramos. Ótimo atendimento pelo WhatsApp."</p>
+            <div class="cliente-info">
+                <img src="https://via.placeholder.com/45" class="cliente-foto">
+                <div>
+                    <span class="cliente-nome">Ana Souza</span>
+                    <span class="cliente-status">Cliente Verificado ✅</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div id="checkout-area">
+        <div class="head-check">
+            <h3>🛒 Meu Pedido</h3>
+            <button class="btn-clear" onclick="clearCart()">Esvaziar</button>
+        </div>
+        <div id="cart-list"></div>
+        
+        <form id="order-form">
+            <label>Endereço Completo (Rua, Nº, Bairro) *</label>
+            <input type="text" id="address" required placeholder="Ex: Rua das Flores, 123, Centro">
+            
+            <label>Forma de Pagamento *</label>
+            <select id="payment" required>
+                <option value="">Selecione...</option>
+                <option value="Pix">Pix</option>
+                
+                <option value="Link de Pagamento">Link de Pagamento</option>
+            </select>
+
+            <label>Alguma observação?</label>
+            <input type="text" id="note" placeholder="Ex: Sem cebola, troco para 50...">
+        </form>
+    </div>
+</div>
+
+<div class="footer-nav" id="footer-nav">
+    <div class="total-box">
+        <small>Total do pedido</small>
+        <strong id="total-display">R$ 0,00</strong>
+    </div>
+    <button class="btn-main" id="btn-action" onclick="handleAction()">Ver Carrinho</button>
+</div>
+
+<script>
+    let cart = {};
+    let total = 0;
+    let isCheckingOut = false;
+
+    function addItem(name, price) {
+        if (cart[name]) {
+            cart[name].qty += 1;
+        } else {
+            cart[name] = { price: price, qty: 1 };
+        }
+        total += price;
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('total-display').innerText = `R$ ${total.toFixed(2).replace('.',',')}`;
+        const totalItems = Object.values(cart).reduce((t, item) => t + item.qty, 0);
+        
+        if (totalItems > 0) {
+            document.getElementById('footer-nav').style.display = 'flex';
+            if (!isCheckingOut) {
+                document.getElementById('btn-action').innerText = `Ver Carrinho (${totalItems})`;
+            }
+        }
+
+        if (isCheckingOut) renderCart();
+    }
+
+    function renderCart() {
+        const list = document.getElementById('cart-list');
+        list.innerHTML = '';
+        for (let name in cart) {
+            const item = cart[name];
+            list.innerHTML += `
+                <div class="line-item">
+                    <span><span class="badge">${item.qty}x</span> ${name}</span>
+                    <strong>R$ ${(item.price * item.qty).toFixed(2)}</strong>
+                </div>`;
+        }
+    }
+
+    function handleAction() {
+        if (!isCheckingOut) {
+            isCheckingOut = true;
+            renderCart();
+            document.getElementById('checkout-area').style.display = 'block';
+            document.getElementById('btn-action').innerText = "Finalizar no WhatsApp";
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        } else {
+            sendWhatsApp();
+        }
+    }
+
+    function clearCart() {
+        if (confirm("Deseja limpar seu carrinho?")) {
+            cart = {};
+            total = 0;
+            isCheckingOut = false;
+            document.getElementById('checkout-area').style.display = 'none';
+            document.getElementById('footer-nav').style.display = 'none';
+            document.getElementById('btn-action').style.background = "#25d366";
+            document.getElementById('btn-action').innerText = "Ver Carrinho";
+        }
+    }
+
+    function sendWhatsApp() {
+        const address = document.getElementById('address').value;
+        const payment = document.getElementById('payment').value;
+        const note = document.getElementById('note').value;
+
+        if (!address || !payment) {
+            alert("⚠️ Por favor, preencha o endereço e a forma de pagamento.");
+            return;
+        }
+
+        const phone = "5511999999999"; // SUBSTITUA PELO SEU WHATSAPP
+        let text = `*PEDIDO - ESPETINHO DO MAX*\n\n`;
+        
+        for (let name in cart) {
+            text += `✅ ${cart[name].qty}x ${name} - R$ ${(cart[name].price * cart[name].qty).toFixed(2)}\n`;
+        }
+        
+        text += `\n*💰 TOTAL: R$ ${total.toFixed(2)}*`;
+        text += `\n\n📍 *Endereço:* ${address}`;
+        text += `\n💳 *Pagamento:* ${payment}`;
+        if (note) text += `\n📝 *Obs:* ${note}`;
+
+        const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+</script>
+
+</body>
+</html>
